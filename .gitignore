@@ -1,0 +1,9 @@
+felicity_assignment_tasklist.md
+## Backend
+backend/.env
+backend/node_modules
+
+
+## Frontend
+frontend/.env
+frontend/node_modules

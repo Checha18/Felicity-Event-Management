@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Tangerine:wght@700&family=Great+Vibes&display=swap');
+
+.navbar-title {
+    font-family: 'Pinyon Script', 'Tangerine', 'Great Vibes', cursive;
+    font-size: 40px;
+}
+
+
+@layer utilities {
+  .font-gothic {
+    font-family: 'Pinyon Script', 'Tangerine', 'Great Vibes', cursive;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+}
+
+body {
+  background-color: black;
+  color: white;
+}
