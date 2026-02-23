@@ -3,63 +3,71 @@ const mongoose = require('mongoose');
 const participantSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    required: [true, 'First name is required'],
+    required: true,
     trim: true
   },
   lastName: {
     type: String,
-    required: [true, 'Last name is required'],
+    required: true,
     trim: true
   },
   email: {
     type: String,
-    required: [true, 'Email is required'],
+    required: true,
     unique: true,
     lowercase: true,
     trim: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email']
   },
   participantType: {
     type: String,
     enum: ['IIIT', 'Non-IIIT'],
-    required: [true, 'Participant type is required']
+    required: true
   },
   collegeName: {
     type: String,
-    required: [true, 'College/Organization name is required'],
+    required: true,
     trim: true
   },
   contactNumber: {
     type: String,
-    required: [true, 'Contact number is required'],
-    match: [/^[0-9]{10}$/, 'Please enter a valid 10-digit contact number']
+    required: true,
+    trim: true
+  },
+  interests: {
+    type: [String],
+    default: []
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters']
+    required: true
   },
-  // Additional fields for preferences (set during onboarding)
-  interests: [{
-    type: String,
-    trim: true
-  }],
   followedClubs: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Organizer'
   }],
-  // Onboarding status
-  hasCompletedOnboarding: {
-    type: Boolean,
-    default: false
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  timestamps: true // Automatically adds createdAt and updatedAt
 });
 
-// Index for faster email lookups
-participantSchema.index({ email: 1 });
+// Check for unique email across Admin and Organizer model before saving
+participantSchema.pre('save', async function (next) {
+  if (this.isNew || this.isModified('email')) {
+    const Admin = mongoose.model('Admin');
+    const Organizer = mongoose.model('Organizer');
 
-const Participant = mongoose.model('Participant', participantSchema);
+    const [adminExists, organizerExists] = await Promise.all([
+      Admin.findOne({ email: this.email }),
+      Organizer.findOne({ email: this.email })
+    ]);
 
-module.exports = Participant;
+    if (adminExists || organizerExists) {
+      throw new Error('Email already exists');
+    }
+  }
+  next();
+});
+
+module.exports = mongoose.model('Participant', participantSchema);

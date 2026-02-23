@@ -8,66 +8,51 @@ const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-/**
- * Helper function to generate JWT token
- * @param {object} payload - User data to include in token
- * @returns {string} JWT token
- */
 const generateToken = (payload) => {
-  return jwt.sign(
-    payload,
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRY || '7d' } // Token expires in 7 days
-  );
+  return jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRY || '7d'
+  });
 };
 
-/**
- * POST /api/auth/register
- * Register a new participant (IIIT or Non-IIIT)
- */
+// TODO: add email verification before account activation
+// register participant
 router.post('/register', async (req, res) => {
   try {
-    const { 
-      firstName, 
-      lastName, 
-      email, 
-      participantType, 
-      collegeName, 
-      contactNumber, 
-      password 
-    } = req.body;
+    const { firstName, lastName, email, participantType, collegeName, contactNumber, password } = req.body;
 
-    // Validate required fields
     if (!firstName || !lastName || !email || !participantType || !collegeName || !contactNumber || !password) {
       return res.status(400).json({
         success: false,
-        message: 'All fields are required.'
+        message: 'All fields required'
       });
     }
 
-    // Validate IIIT email domain
+    // check IIIT email domain
     if (participantType === 'IIIT') {
+      // FIXME: need to validate more email formats for research scholars
       if (!email.endsWith('@iiit.ac.in') && !email.endsWith('@students.iiit.ac.in') && !email.endsWith('@research.iiit.ac.in')) {
         return res.status(400).json({
           success: false,
-          message: 'IIIT participants must use @iiit.ac.in email address.'
+          message: 'IIIT participants must use @iiit.ac.in email'
         });
       }
     }
 
-    // Check if user already exists
+    // check email uniqueness across all models
+    // TODO: optimize this - hitting 3 collections is slow
     const existingParticipant = await Participant.findOne({ email });
-    if (existingParticipant) {
+    const existingOrganizer = await Organizer.findOne({ contactEmail: email });
+    const existingAdmin = await Admin.findOne({ email });
+
+    if (existingParticipant || existingOrganizer || existingAdmin) {
       return res.status(409).json({
         success: false,
-        message: 'User with this email already exists.'
+        message: 'Email already registered'
       });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new participant
     const participant = new Participant({
       firstName,
       lastName,
@@ -79,18 +64,17 @@ router.post('/register', async (req, res) => {
     });
 
     await participant.save();
+    console.log('New participant registered:', email);
 
-    // Generate JWT token
     const token = generateToken({
       userId: participant._id,
       email: participant.email,
       role: 'participant'
     });
 
-    // Return success response (don't send password)
     res.status(201).json({
       success: true,
-      message: 'Registration successful.',
+      message: 'Registration successful',
       token,
       user: {
         id: participant._id,
@@ -102,45 +86,40 @@ router.post('/register', async (req, res) => {
         hasCompletedOnboarding: participant.hasCompletedOnboarding
       }
     });
-
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({
       success: false,
-      message: 'Registration failed.',
-      error: error.message
+      message: error.message
     });
   }
 });
 
-/**
- * POST /api/auth/login
- * Login for all user types (Participant, Organizer, Admin)
- */
+// login - HACK: checking all 3 models based on role param from frontend
 router.post('/login', async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
-    // Validate required fields
     if (!email || !password || !role) {
       return res.status(400).json({
         success: false,
-        message: 'Email, password, and role are required.'
+        message: 'Email, password, and role required'
       });
     }
 
-    // Validate role
     if (!['participant', 'organizer', 'admin'].includes(role)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid role specified.'
+        message: 'Invalid role'
       });
     }
+
+    console.log('Login attempt:', role, email);
 
     let user;
     let userRole;
 
-    // Find user based on role
+    // TODO: refactor this if-else chain, looks messy
     if (role === 'participant') {
       user = await Participant.findOne({ email });
       userRole = 'participant';
@@ -152,39 +131,38 @@ router.post('/login', async (req, res) => {
       userRole = 'admin';
     }
 
-    // Check if user exists
     if (!user) {
+      console.log('User not found for role:', role);
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password.'
+        message: 'Invalid credentials'
       });
     }
 
-    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password.'
+        message: 'Invalid credentials'
       });
     }
 
-    // Check if organizer is approved
+    // check organizer approval
     if (userRole === 'organizer' && !user.isApproved) {
       return res.status(403).json({
         success: false,
-        message: 'Your account is pending approval. Please contact admin.'
+        message: 'Account pending approval'
       });
     }
 
-    // Generate JWT token
+    console.log('Login successful:', userRole, email);
+
     const token = generateToken({
       userId: user._id,
       email: userRole === 'organizer' ? user.contactEmail : user.email,
       role: userRole
     });
 
-    // Prepare user response based on role
     let userResponse;
     if (userRole === 'participant') {
       userResponse = {
@@ -212,53 +190,36 @@ router.post('/login', async (req, res) => {
       };
     }
 
-    // Return success response
     res.status(200).json({
       success: true,
-      message: 'Login successful.',
+      message: 'Login successful',
       token,
       user: userResponse
     });
-
   } catch (error) {
-    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Login failed.',
-      error: error.message
+      message: error.message
     });
   }
 });
 
-/**
- * POST /api/auth/logout
- * Logout (client-side should remove token)
- * This is mainly for logging purposes
- */
+// logout
 router.post('/logout', verifyToken, async (req, res) => {
   try {
-    // Since JWT is stateless, logout is handled client-side by removing token
-    // This endpoint can be used for logging or additional cleanup if needed
-    
     res.status(200).json({
       success: true,
-      message: 'Logout successful.'
+      message: 'Logout successful'
     });
   } catch (error) {
-    console.error('Logout error:', error);
     res.status(500).json({
       success: false,
-      message: 'Logout failed.',
-      error: error.message
+      message: error.message
     });
   }
 });
 
-/**
- * GET /api/auth/verify
- * Verify if token is still valid and get current user
- * Useful for maintaining session on page reload
- */
+// verify token
 router.get('/verify', verifyToken, async (req, res) => {
   try {
     const { userId, role } = req.user;
@@ -275,7 +236,7 @@ router.get('/verify', verifyToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found.'
+        message: 'User not found'
       });
     }
 
@@ -286,13 +247,10 @@ router.get('/verify', verifyToken, async (req, res) => {
         role
       }
     });
-
   } catch (error) {
-    console.error('Verify token error:', error);
     res.status(500).json({
       success: false,
-      message: 'Token verification failed.',
-      error: error.message
+      message: error.message
     });
   }
 });

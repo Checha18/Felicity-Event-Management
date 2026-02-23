@@ -1,9 +1,23 @@
+## Personal / workspace clutter
 felicity_assignment_tasklist.md
+codebase-analysis.md
+Assignment_1 -V3.pdf
+.md
 ## Backend
 backend/.env
+backend/.env.test
 backend/node_modules
-
+backend/test_results.txt
+backend/testFlow.js
+backend/runTests.sh
+backend/fixOrganizerIndexes.js
+backend/deleteAdmin.js
+backend/AUTOMATED_TEST_README.md
+backend/__tests__
 
 ## Frontend
 frontend/.env
 frontend/node_modules
+
+## Logs
+*.log

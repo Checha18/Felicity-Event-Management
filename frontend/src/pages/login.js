@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/authContext';
 
 function Login() {
@@ -9,7 +8,6 @@ function Login() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('participant');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -19,149 +17,93 @@ function Login() {
     setError('');
     setIsLoading(true);
 
-    try {
-      await login(email, password, role);
+    console.log('Login attempt started');
 
-      // Redirect based on role
-      if (role === 'participant') {
-        navigate('/dashboard');
-      } else if (role === 'organizer') {
-        navigate('/organizer/dashboard');
-      } else if (role === 'admin') {
+    try {
+      // HACK: trying all 3 roles since frontend doesn't know which one
+      let userData;
+      try {
+        console.log('Trying admin login...');
+        userData = await login(email, password, 'admin');
+        console.log('Admin login successful:', userData);
         navigate('/admin/dashboard');
+        return;
+      } catch (err) {
+        console.log('Admin login failed:', err.message);
+        try {
+          console.log('Trying organizer login...');
+          userData = await login(email, password, 'organizer');
+          console.log('Organizer login successful:', userData);
+          navigate('/organizer/dashboard');
+          return;
+        } catch (err2) {
+          console.log('Organizer login failed:', err2.message);
+          try {
+            console.log('Trying participant login...');
+            userData = await login(email, password, 'participant');
+            console.log('Participant login successful:', userData);
+            navigate('/dashboard');
+            return;
+          } catch (err3) {
+            console.log('Participant login failed:', err3.message);
+            throw new Error('Invalid email or password');
+          }
+        }
       }
     } catch (error) {
-      setError(error.response?.data?.message || error.message || 'Login failed. Please try again.');
+      console.log('Final error:', error);
+      setError(error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="w-full max-w-md border border-white/20 p-8">
-        {/* Felicity Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-6xl font-gothic text-white mb-2">
-            Felicity
-          </h1>
+    <div style={{ backgroundColor: 'white', color: 'black', padding: '20px', minHeight: '100vh' }}>
+      <h1>Felicity</h1>
+
+      <form onSubmit={handleSubmit}>
+        {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+
+        <div style={{ marginBottom: '15px' }}>
+          <label htmlFor="email" style={{ display: 'block', marginBottom: '5px' }}>Email</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            required
+            style={{ color: 'black', padding: '5px', width: '300px' }}
+          />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Error Message */}
-          {error && (
-            <div className="border border-red-500 p-3 text-red-500 text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-black border border-white text-white focus:outline-none focus:border-gray-400 placeholder-gray-600"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-black border border-white text-white focus:outline-none focus:border-gray-400 placeholder-gray-600 pr-12"
-                placeholder="Enter your password"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white hover:text-gray-300"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Role Selection */}
-          <div>
-            <label className="block text-sm font-medium text-white mb-3">
-              Select Role
-            </label>
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                type="button"
-                onClick={() => setRole('participant')}
-                className={`px-4 py-3 border text-sm transition-colors ${role === 'participant'
-                  ? 'bg-white text-black border-white'
-                  : 'bg-black text-white border-white hover:bg-white/10'
-                  }`}
-              >
-                Participant
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('organizer')}
-                className={`px-4 py-3 border text-sm transition-colors ${role === 'organizer'
-                  ? 'bg-white text-black border-white'
-                  : 'bg-black text-white border-white hover:bg-white/10'
-                  }`}
-              >
-                Organizer
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('admin')}
-                className={`px-4 py-3 border text-sm transition-colors ${role === 'admin'
-                  ? 'bg-white text-black border-white'
-                  : 'bg-black text-white border-white hover:bg-white/10'
-                  }`}
-              >
-                Admin
-              </button>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 bg-black border border-white text-white font-semibold hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Signing In...' : 'Sign In'}
+        <div style={{ marginBottom: '15px' }}>
+          <label htmlFor="password" style={{ display: 'block', marginBottom: '5px' }}>Password</label>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            required
+            style={{ color: 'black', padding: '5px', width: '300px' }}
+          />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ marginLeft: '10px' }}>
+            {showPassword ? 'Hide' : 'Show'}
           </button>
-
-          {/* Sign Up Link */}
-          <div className="text-center pt-4">
-            <p className="text-gray-400">
-              Don't have an account?{' '}
-              <a
-                href="/register"
-                className="text-white hover:underline underline-offset-4"
-              >
-                Sign Up
-              </a>
-            </p>
-          </div>
-        </form>
-
-        {/* Footer */}
-        <div className="text-center mt-6 text-gray-600 text-xs tracking-wider">
         </div>
-      </div>
+
+        <button type="submit" disabled={isLoading} style={{ padding: '8px 16px' }}>
+          {isLoading ? 'Signing In...' : 'Sign In'}
+        </button>
+
+        <div style={{ marginTop: '15px' }}>
+          <p>
+            Don't have an account? <a href="/register">Sign Up</a>
+          </p>
+        </div>
+      </form>
     </div>
   );
 }

@@ -17,9 +17,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 api.interceptors.response.use(
@@ -33,4 +31,5 @@ api.interceptors.response.use(
   }
 );
 
+// TODO: maybe merge this with axios.js later
 export default api;

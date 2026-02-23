@@ -8,29 +8,28 @@ const instance = axios.create({
     }
 });
 
+// add auth token to requests
 instance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
         if (token) {
-            config.headers['Authorization'] = 'Bearer' + ' ' + token;
+            config.headers['Authorization'] = `Bearer ${token}`;
         }
         return config;
     },
     (error) => {
-        console.error('Request error:', error);
         return Promise.reject(error);
     }
 )
 
 instance.interceptors.response.use(
-    (response) => {
-        return response;
-    },
+    (response) => response.data,
     (error) => {
-        console.error('Response error:', error);
-        if (error.response) {
-            console.error('Error data:', error.response.data);
-            console.error('Error status:', error.response.status);
+        // don't auto-redirect on 401 during login attempts
+        if (error.response?.status === 401 && !error.config.url.includes('/auth/login')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
         }
         return Promise.reject(error);
     }
