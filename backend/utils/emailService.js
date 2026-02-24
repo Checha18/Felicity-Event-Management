@@ -7,7 +7,7 @@ const createTransporter = () => {
     // For production, use a proper email service like SendGrid, AWS SES, etc.
 
     if (process.env.EMAIL_SERVICE === 'gmail') {
-        return nodemailer.createTransporter({
+        return nodemailer.createTransport({
             service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER,
@@ -16,7 +16,7 @@ const createTransporter = () => {
         });
     } else {
         // Default to SMTP configuration
-        return nodemailer.createTransporter({
+        return nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp.gmail.com',
             port: process.env.SMTP_PORT || 587,
             secure: false, // true for 465, false for other ports
