@@ -22,6 +22,7 @@ function ClubDetail() {
         if (user) {
             setFollowedClubs(user.followedClubs || []);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, user]);
 
     const fetchOrganizerDetails = async () => {

@@ -18,6 +18,7 @@ function ManagePasswordResets() {
   useEffect(() => {
     fetchRequests();
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   const fetchRequests = async () => {

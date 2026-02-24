@@ -15,7 +15,7 @@ function MyEvents() {
     const [proofFiles, setProofFiles] = useState({});
     const [uploadingProof, setUploadingProof] = useState({});
     const [proofErrors, setProofErrors] = useState({});
-    const [proofSuccess, setProofSuccess] = useState({});
+    const [, setProofSuccess] = useState({});
 
     useEffect(() => {
         fetchMyEvents();
@@ -358,45 +358,45 @@ function MyEvents() {
                                             {/* payment proof upload for pending/rejected orders */}
                                             {registration.registrationType === 'Merchandise' &&
                                                 ['pending', 'rejected'].includes(registration.paymentStatus) && (
-                                                <div style={{
-                                                    marginTop: '15px',
-                                                    padding: '15px',
-                                                    backgroundColor: '#fffbf0',
-                                                    border: '1px solid #f0ad4e'
-                                                }}>
-                                                    <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '14px' }}>
-                                                        Upload Payment Proof
-                                                    </p>
-                                                    {proofErrors[registration._id] && (
-                                                        <p style={{ color: 'red', fontSize: '13px', margin: '0 0 6px 0' }}>
-                                                            {proofErrors[registration._id]}
+                                                    <div style={{
+                                                        marginTop: '15px',
+                                                        padding: '15px',
+                                                        backgroundColor: '#fffbf0',
+                                                        border: '1px solid #f0ad4e'
+                                                    }}>
+                                                        <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '14px' }}>
+                                                            Upload Payment Proof
                                                         </p>
-                                                    )}
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={(e) => setProofFiles(prev => ({
-                                                            ...prev,
-                                                            [registration._id]: e.target.files[0]
-                                                        }))}
-                                                        style={{ display: 'block', marginBottom: '8px' }}
-                                                    />
-                                                    <button
-                                                        onClick={() => handleProofUpload(registration._id)}
-                                                        disabled={uploadingProof[registration._id]}
-                                                        style={{
-                                                            padding: '6px 16px',
-                                                            backgroundColor: uploadingProof[registration._id] ? '#ccc' : '#f0ad4e',
-                                                            border: 'none',
-                                                            cursor: uploadingProof[registration._id] ? 'not-allowed' : 'pointer',
-                                                            fontSize: '13px',
-                                                            fontWeight: 'bold'
-                                                        }}
-                                                    >
-                                                        {uploadingProof[registration._id] ? 'Uploading...' : 'Submit Proof'}
-                                                    </button>
-                                                </div>
-                                            )}
+                                                        {proofErrors[registration._id] && (
+                                                            <p style={{ color: 'red', fontSize: '13px', margin: '0 0 6px 0' }}>
+                                                                {proofErrors[registration._id]}
+                                                            </p>
+                                                        )}
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => setProofFiles(prev => ({
+                                                                ...prev,
+                                                                [registration._id]: e.target.files[0]
+                                                            }))}
+                                                            style={{ display: 'block', marginBottom: '8px' }}
+                                                        />
+                                                        <button
+                                                            onClick={() => handleProofUpload(registration._id)}
+                                                            disabled={uploadingProof[registration._id]}
+                                                            style={{
+                                                                padding: '6px 16px',
+                                                                backgroundColor: uploadingProof[registration._id] ? '#ccc' : '#f0ad4e',
+                                                                border: 'none',
+                                                                cursor: uploadingProof[registration._id] ? 'not-allowed' : 'pointer',
+                                                                fontSize: '13px',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        >
+                                                            {uploadingProof[registration._id] ? 'Uploading...' : 'Submit Proof'}
+                                                        </button>
+                                                    </div>
+                                                )}
 
                                             {/* QR Code Display */}
                                             {registration.qrCode && registration.status !== 'cancelled' && (

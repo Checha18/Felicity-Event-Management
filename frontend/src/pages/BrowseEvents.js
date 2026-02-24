@@ -24,6 +24,7 @@ function BrowseEvents() {
 
     useEffect(() => {
         fetchEvents();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showTrending, showFollowedOnly, startDate, endDate, searchTerm, eventTypeFilter, eligibilityFilter]);
 
     const fetchEvents = async () => {
