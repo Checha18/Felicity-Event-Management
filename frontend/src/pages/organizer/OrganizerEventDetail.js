@@ -38,11 +38,13 @@ function OrganizerEventDetail() {
     useEffect(() => {
         fetchEventDetails();
         fetchRegistrations();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     useEffect(() => {
         if (activeTab === 'approvals') fetchPaymentApprovals();
         if (activeTab === 'attendance') fetchAttendance();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab]);
 
     const fetchEventDetails = async () => {

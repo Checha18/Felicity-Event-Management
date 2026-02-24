@@ -40,7 +40,7 @@ function RequestPasswordReset() {
     setLoading(true);
 
     try {
-      const response = await axios.post('/password-reset/request', { reason });
+      await axios.post('/password-reset/request', { reason });
       setSuccess('Password reset request submitted successfully. Admin will review your request.');
       setReason('');
       // Refresh requests list

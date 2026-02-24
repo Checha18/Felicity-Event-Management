@@ -6,7 +6,7 @@ import OrganizerNavbar from '../../components/OrganizerNavbar';
 
 function OrganizerDashboard() {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    useAuth();
 
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);

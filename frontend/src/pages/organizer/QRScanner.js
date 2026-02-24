@@ -26,6 +26,7 @@ function QRScanner() {
 
     useEffect(() => {
         fetchEventAndAttendance();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [eventId]);
 
     useEffect(() => {
@@ -39,14 +40,15 @@ function QRScanner() {
 
         scanner.render(
             (decodedText) => handleScan(decodedText),
-            () => {}
+            () => { }
         );
 
         scannerRef.current = scanner;
 
         return () => {
-            scanner.clear().catch(() => {});
+            scanner.clear().catch(() => { });
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [scannerReady]);
 
     const fetchEventAndAttendance = async () => {
@@ -66,7 +68,7 @@ function QRScanner() {
 
     const handleScan = async (qrData) => {
         if (scannerRef.current) {
-            try { scannerRef.current.pause(true); } catch (e) {}
+            try { scannerRef.current.pause(true); } catch (e) { }
         }
 
         try {
@@ -98,7 +100,7 @@ function QRScanner() {
 
         setTimeout(() => {
             if (scannerRef.current) {
-                try { scannerRef.current.resume(); } catch (e) {}
+                try { scannerRef.current.resume(); } catch (e) { }
             }
         }, 2000);
     };
