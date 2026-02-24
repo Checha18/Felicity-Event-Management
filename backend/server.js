@@ -26,7 +26,7 @@ const startServer = async () => {
     // Setup Socket.io with CORS
     const io = new Server(server, {
       cors: {
-        origin: 'http://localhost:3000',
+        origin: process.env.FRONTEND_URL || 'http://localhost:3000',
         credentials: true,
         methods: ['GET', 'POST']
       }
