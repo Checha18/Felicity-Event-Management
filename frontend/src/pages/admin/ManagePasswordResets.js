@@ -126,7 +126,7 @@ function ManagePasswordResets() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', color: 'black' }}>
       <AdminNavbar />
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
@@ -398,23 +398,6 @@ function ManagePasswordResets() {
           )}
         </div>
 
-        {/* Info Box */}
-        <div style={{
-          backgroundColor: '#d1ecf1',
-          border: '1px solid #bee5eb',
-          color: '#0c5460',
-          padding: '15px',
-          borderRadius: '5px'
-        }}>
-          <strong>ℹ️ How it works:</strong>
-          <ul style={{ marginTop: '10px', marginBottom: 0, paddingLeft: '20px' }}>
-            <li>Organizers submit password reset requests when they forget their password</li>
-            <li>You can approve or reject each request</li>
-            <li>When approved, a new random password is automatically generated</li>
-            <li>Share the new credentials with the organizer via their contact email</li>
-            <li>The organizer can then log in with the new password and change it from their profile</li>
-          </ul>
-        </div>
       </div>
     </div>
   );
